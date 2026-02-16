@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free AI Website Audit — SEO Checker & Site Analyzer</title>
+<meta name="description" content="Get a free instant website audit. Check SEO meta tags, heading structure, image alt text, and more. 100% client-side analysis.">
+<meta name="keywords" content="website audit, SEO checker, site analyzer, meta tag checker, free SEO tool">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f172a;--surface:#1e293b;--surface2:#334155;--accent:#3b82f6;--accent2:#8b5cf6;--green:#22c55e;--yellow:#eab308;--red:#ef4444;--text:#f1f5f9;--text2:#94a3b8;--radius:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+
+.container{max-width:800px;margin:0 auto;padding:20px}
+
+header{text-align:center;padding:60px 20px 40px}
+header h1{font-size:2.5rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+header p{color:var(--text2);font-size:1.1rem;max-width:500px;margin:0 auto}
+.badge{display:inline-block;background:var(--surface);border:1px solid var(--surface2);padding:4px 12px;border-radius:20px;font-size:.8rem;color:var(--text2);margin-bottom:16px}
+
+.input-section{background:var(--surface);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+.input-row{display:flex;gap:12px}
+.input-row input{flex:1;padding:14px 16px;border-radius:8px;border:2px solid var(--surface2);background:var(--bg);color:var(--text);font-size:1rem;outline:none;transition:border .2s}
+.input-row input:focus{border-color:var(--accent)}
+.input-row button{padding:14px 28px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:1rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.input-row button:hover{opacity:.9}
+.input-row button:disabled{opacity:.5;cursor:not-allowed}
+
+.mode-toggle{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.mode-toggle button{padding:8px 16px;border-radius:6px;border:1px solid var(--surface2);background:transparent;color:var(--text2);font-size:.85rem;cursor:pointer;transition:all .2s}
+.mode-toggle button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+#results{display:none}
+.result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.result-header h2{font-size:1.4rem}
+.score{font-size:2rem;font-weight:800;padding:8px 20px;border-radius:var(--radius)}
+.score.good{background:rgba(34,197,94,.15);color:var(--green)}
+.score.ok{background:rgba(234,179,8,.15);color:var(--yellow)}
+.score.bad{background:rgba(239,68,68,.15);color:var(--red)}
+
+.category{background:var(--surface);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.category-header{padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none}
+.category-header:hover{background:var(--surface2)}
+.category-header h3{font-size:1rem;display:flex;align-items:center;gap:8px}
+.category-body{padding:0 20px 16px;display:none}
+.category.open .category-body{display:block}
+.category .arrow{transition:transform .2s;font-size:.8rem}
+.category.open .arrow{transform:rotate(90deg)}
+
+.check-item{padding:10px 0;border-bottom:1px solid var(--surface2);display:flex;gap:10px;align-items:flex-start}
+.check-item:last-child{border-bottom:none}
+.check-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.check-detail{flex:1}
+.check-detail strong{font-size:.9rem}
+.check-detail p{font-size:.8rem;color:var(--text2);margin-top:2px}
+.check-detail code{background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.75rem;word-break:break-all}
+
+.cta-box{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:var(--radius);padding:32px;text-align:center;margin:32px 0}
+.cta-box h3{font-size:1.3rem;margin-bottom:8px}
+.cta-box p{opacity:.85;margin-bottom:20px;font-size:.95rem}
+.cta-box a{display:inline-block;background:#fff;color:var(--accent);padding:14px 32px;border-radius:8px;font-weight:700;font-size:1rem;transition:transform .2s}
+.cta-box a:hover{transform:scale(1.05)}
+
+/* Checklist mode */
+.checklist{background:var(--surface);border-radius:var(--radius);padding:24px}
+.checklist h3{margin-bottom:16px}
+.cl-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--surface2)}
+.cl-item:last-child{border-bottom:none}
+.cl-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.cl-item label{cursor:pointer;font-size:.95rem}
+.cl-item .tip{font-size:.8rem;color:var(--text2)}
+.cl-progress{margin-top:16px;background:var(--bg);border-radius:8px;height:8px;overflow:hidden}
+.cl-progress div{height:100%;background:var(--green);transition:width .3s;border-radius:8px}
+
+footer{text-align:center;padding:40px 20px;color:var(--text2);font-size:.85rem}
+
+.loading{display:none;text-align:center;padding:40px}
+.loading .spinner{width:40px;height:40px;border:4px solid var(--surface2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:600px){
+  header h1{font-size:1.8rem}
+  .input-row{flex-direction:column}
+  .input-row button{width:100%}
+  .score{font-size:1.5rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">✨ 100% Free — No Sign-up Required</div>
+  <h1>🔍 AI Website Audit</h1>
+  <p>Instantly analyze any website for SEO issues, accessibility problems, and performance opportunities.</p>
+</header>
+
+<div class="container">
+  <div class="input-section">
+    <div class="input-row">
+      <input type="url" id="urlInput" placeholder="https://example.com" spellcheck="false">
+      <button id="auditBtn" onclick="startAudit()">Audit Now</button>
+    </div>
+    <div class="mode-toggle">
+      <button class="active" onclick="setMode('auto',this)">🤖 Auto Scan</button>
+      <button onclick="setMode('checklist',this)">📋 Manual Checklist</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Analyzing website...</p>
+  </div>
+
+  <div id="results"></div>
+
+  <div id="checklistSection" style="display:none">
+    <div class="checklist">
+      <h3>📋 SEO & Performance Checklist</h3>
+      <div id="checklistItems"></div>
+      <div class="cl-progress"><div id="clBar" style="width:0%"></div></div>
+      <p style="margin-top:8px;font-size:.85rem;color:var(--text2)" id="clCount">0 / 0 completed</p>
+    </div>
+  </div>
+
+  <div class="cta-box" id="ctaBox" style="display:none">
+    <h3>🚀 Want a Deep Audit with Actionable Fixes?</h3>
+    <p>Get a comprehensive 50+ point audit report with prioritized recommendations, competitor analysis, and step-by-step fix guide.</p>
+    <a href="https://gumroad.com" target="_blank" rel="noopener">Get Full Audit Report — $29</a>
+  </div>
+
+  <footer>
+    <p>AI Website Audit — Free SEO analysis tool. No data stored on our servers.</p>
+    <p style="margin-top:4px">© 2026 All rights reserved.</p>
+  </footer>
+</div>
+
+<script>
+let mode = 'auto';
+
+function setMode(m, btn) {
+  mode = m;
+  document.querySelectorAll('.mode-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (m === 'checklist') {
+    showChecklist();
+    document.getElementById('results').style.display = 'none';
+  } else {
+    document.getElementById('checklistSection').style.display = 'none';
+  }
+}
+
+const CHECKLIST = [
+  { cat: 'Meta Tags', items: [
+    { text: 'Page has a <title> tag', tip: 'Title should be 50-60 characters' },
+    { text: 'Page has a meta description', tip: 'Description should be 150-160 characters' },
+    { text: 'Page has a canonical URL', tip: 'Prevents duplicate content issues' },
+    { text: 'Open Graph tags present (og:title, og:description, og:image)', tip: 'Required for social media sharing' },
+    { text: 'Twitter Card tags present', tip: 'Enables rich previews on Twitter' },
+    { text: 'Viewport meta tag set', tip: 'Required for mobile responsiveness' },
+  ]},
+  { cat: 'Headings', items: [
+    { text: 'Page has exactly one <h1> tag', tip: 'Multiple h1s can confuse search engines' },
+    { text: 'Heading hierarchy is correct (no skipped levels)', tip: 'h1 → h2 → h3, not h1 → h3' },
+    { text: 'Headings are descriptive and contain keywords', tip: 'Help users and search engines understand content' },
+  ]},
+  { cat: 'Images', items: [
+    { text: 'All images have alt attributes', tip: 'Critical for accessibility and SEO' },
+    { text: 'Images are optimized (WebP/AVIF format)', tip: 'Reduces page load time' },
+    { text: 'Images have explicit width/height', tip: 'Prevents layout shift (CLS)' },
+    { text: 'No broken image links', tip: 'Check with browser DevTools' },
+  ]},
+  { cat: 'Links', items: [
+    { text: 'No broken internal links', tip: 'Run a link checker tool' },
+    { text: 'External links use rel="noopener"', tip: 'Security best practice' },
+    { text: 'Links have descriptive anchor text', tip: 'Avoid "click here" or "read more"' },
+  ]},
+  { cat: 'Performance', items: [
+    { text: 'Page loads in under 3 seconds', tip: 'Test with Google PageSpeed Insights' },
+    { text: 'CSS/JS files are minified', tip: 'Reduces file size' },
+    { text: 'Browser caching headers set', tip: 'Check Cache-Control headers' },
+    { text: 'No render-blocking resources', tip: 'Defer non-critical JS, inline critical CSS' },
+  ]},
+  { cat: 'Technical SEO', items: [
+    { text: 'robots.txt exists and is valid', tip: 'Check /robots.txt' },
+    { text: 'XML sitemap exists', tip: 'Check /sitemap.xml' },
+    { text: 'HTTPS enabled (no mixed content)', tip: 'All resources should load over HTTPS' },
+    { text: 'Structured data (JSON-LD) present', tip: 'Enables rich snippets in search results' },
+    { text: 'Hreflang tags for multilingual sites', tip: 'Only needed if you have multiple languages' },
+  ]},
+];
+
+function showChecklist() {
+  const sec = document.getElementById('checklistSection');
+  const container = document.getElementById('checklistItems');
+  sec.style.display = 'block';
+  document.getElementById('ctaBox').style.display = 'block';
+  let html = '';
+  let total = 0;
+  CHECKLIST.forEach(cat => {
+    html += `<h4 style="margin:16px 0 8px;color:var(--accent);font-size:.9rem">${cat.cat}</h4>`;
+    cat.items.forEach((item, i) => {
+      const id = `cl_${cat.cat}_${i}`;
+      html += `<div class="cl-item"><input type="checkbox" id="${id}" onchange="updateProgress()"><label for="${id}">${item.text}<br><span class="tip">${item.tip}</span></label></div>`;
+      total++;
+    });
+  });
+  container.innerHTML = html;
+  document.getElementById('clCount').textContent = `0 / ${total} completed`;
+}
+
+function updateProgress() {
+  const checks = document.querySelectorAll('#checklistItems input[type=checkbox]');
+  const done = [...checks].filter(c => c.checked).length;
+  const pct = Math.round((done / checks.length) * 100);
+  document.getElementById('clBar').style.width = pct + '%';
+  document.getElementById('clCount').textContent = `${done} / ${checks.length} completed`;
+}
+
+const PROXY = 'https://api.allorigins.win/raw?url=';
+
+async function startAudit() {
+  if (mode === 'checklist') { showChecklist(); return; }
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { alert('Please enter a URL'); return; }
+  
+  const btn = document.getElementById('auditBtn');
+  const loading = document.getElementById('loading');
+  const results = document.getElementById('results');
+  
+  btn.disabled = true;
+  loading.style.display = 'block';
+  results.style.display = 'none';
+  
+  try {
+    const html = await fetchPage(url);
+    if (html) {
+      const report = analyzePage(html, url);
+      renderResults(report, url);
+    } else {
+      results.innerHTML = `<div style="background:var(--surface);border-radius:var(--radius);padding:24px;text-align:center">
+        <p style="font-size:1.1rem;margin-bottom:12px">⚠️ Couldn't fetch the page (CORS restriction)</p>
+        <p style="color:var(--text2);margin-bottom:16px">Try the <strong>Manual Checklist</strong> mode instead, or enter a different URL.</p>
+        <button onclick="setMode('checklist',document.querySelectorAll('.mode-toggle button')[1])" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:.95rem">Switch to Checklist</button>
+      </div>`;
+      results.style.display = 'block';
+    }
+  } catch(e) {
+    results.innerHTML = `<div style="background:var(--surface);border-radius:var(--radius);padding:24px;text-align:center"><p>❌ Error: ${e.message}</p></div>`;
+    results.style.display = 'block';
+  }
+  
+  btn.disabled = false;
+  loading.style.display = 'none';
+}
+
+async function fetchPage(url) {
+  try {
+    const r = await fetch(PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) throw new Error();
+    return await r.text();
+  } catch {
+    try {
+      const r = await fetch(url, { mode: 'cors', signal: AbortSignal.timeout(10000) });
+      return await r.text();
+    } catch { return null; }
+  }
+}
+
+function analyzePage(html, url) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const checks = [];
+  
+  // Title
+  const title = doc.querySelector('title');
+  const titleText = title ? title.textContent.trim() : '';
+  checks.push({ cat:'Meta Tags', name:'Title Tag', pass: !!titleText, 
+    detail: titleText ? `"${titleText}" (${titleText.length} chars)` : 'Missing', 
+    tip: titleText ? (titleText.length<30?'Too short — aim for 50-60 chars': titleText.length>60?'Too long — trim to 60 chars':'Good length') : 'Add a descriptive title tag' });
+
+  // Meta description
+  const desc = doc.querySelector('meta[name="description"]');
+  const descText = desc ? desc.getAttribute('content')?.trim() : '';
+  checks.push({ cat:'Meta Tags', name:'Meta Description', pass: !!descText,
+    detail: descText ? `"${descText.slice(0,80)}${descText.length>80?'...':''}" (${descText.length} chars)` : 'Missing',
+    tip: descText ? (descText.length<120?'Could be longer (150-160 chars ideal)': descText.length>160?'Too long — trim to 160 chars':'Good length') : 'Add a meta description' });
+
+  // Canonical
+  const canonical = doc.querySelector('link[rel="canonical"]');
+  checks.push({ cat:'Meta Tags', name:'Canonical URL', pass: !!canonical,
+    detail: canonical ? canonical.getAttribute('href') : 'Missing',
+    tip: canonical ? 'Good' : 'Add a canonical link to prevent duplicate content' });
+
+  // Viewport
+  const viewport = doc.querySelector('meta[name="viewport"]');
+  checks.push({ cat:'Meta Tags', name:'Viewport Meta', pass: !!viewport,
+    detail: viewport ? viewport.getAttribute('content') : 'Missing',
+    tip: viewport ? 'Good' : 'Required for mobile responsiveness' });
+
+  // OG tags
+  const og = ['og:title','og:description','og:image'].map(p => !!doc.querySelector(`meta[property="${p}"]`));
+  checks.push({ cat:'Meta Tags', name:'Open Graph Tags', pass: og.every(Boolean),
+    detail: `${og.filter(Boolean).length}/3 present (title, desc, image)`,
+    tip: og.every(Boolean) ? 'Good' : 'Add missing OG tags for social sharing' });
+
+  // Twitter
+  const tw = doc.querySelector('meta[name="twitter:card"]');
+  checks.push({ cat:'Meta Tags', name:'Twitter Card', pass: !!tw,
+    detail: tw ? tw.getAttribute('content') : 'Missing',
+    tip: tw ? 'Good' : 'Add twitter:card meta tag' });
+
+  // Favicon
+  const fav = doc.querySelector('link[rel="icon"],link[rel="shortcut icon"]');
+  checks.push({ cat:'Meta Tags', name:'Favicon', pass: !!fav,
+    detail: fav ? fav.getAttribute('href')?.slice(0,60) : 'Missing',
+    tip: fav ? 'Good' : 'Add a favicon' });
+
+  // H1
+  const h1s = doc.querySelectorAll('h1');
+  checks.push({ cat:'Headings', name:'H1 Tag', pass: h1s.length===1,
+    detail: `Found ${h1s.length} h1 tag(s)${h1s.length?': "'+h1s[0].textContent.trim().slice(0,50)+'"':''}`,
+    tip: h1s.length===0?'Add one h1 tag': h1s.length>1?'Use only one h1 per page':'Good' });
+
+  // Heading hierarchy
+  const headings = [...doc.querySelectorAll('h1,h2,h3,h4,h5,h6')];
+  let hierOk = true;
+  for(let i=1;i<headings.length;i++){
+    const prev = parseInt(headings[i-1].tagName[1]);
+    const curr = parseInt(headings[i].tagName[1]);
+    if(curr > prev+1){ hierOk=false; break; }
+  }
+  checks.push({ cat:'Headings', name:'Heading Hierarchy', pass: hierOk,
+    detail: `${headings.length} headings found`,
+    tip: hierOk?'Good — no skipped levels':'Heading levels are skipped (e.g. h1→h3)' });
+
+  // Images
+  const imgs = doc.querySelectorAll('img');
+  const noAlt = [...imgs].filter(i=>!i.getAttribute('alt'));
+  checks.push({ cat:'Images', name:'Image Alt Text', pass: noAlt.length===0 && imgs.length>0,
+    detail: imgs.length===0?'No images found':`${imgs.length - noAlt.length}/${imgs.length} images have alt text`,
+    tip: noAlt.length?`${noAlt.length} image(s) missing alt attributes`:(imgs.length?'Good':'N/A') });
+
+  // Image dimensions
+  const noDim = [...imgs].filter(i=>!i.getAttribute('width')&&!i.getAttribute('height')&&!i.style.width);
+  checks.push({ cat:'Images', name:'Image Dimensions', pass: noDim.length===0 && imgs.length>0,
+    detail: imgs.length===0?'No images':`${imgs.length-noDim.length}/${imgs.length} have explicit dimensions`,
+    tip: noDim.length?'Add width/height to prevent layout shift':'Good' });
+
+  // Links
+  const links = doc.querySelectorAll('a[href]');
+  const extLinks = [...links].filter(a=>{try{return new URL(a.href).origin!==new URL(url).origin}catch{return false}});
+  const noOpener = extLinks.filter(a=>!a.getAttribute('rel')?.includes('noopener'));
+  checks.push({ cat:'Links', name:'External Links', pass: noOpener.length===0,
+    detail: `${extLinks.length} external links, ${noOpener.length} missing rel="noopener"`,
+    tip: noOpener.length?'Add rel="noopener" to external links':'Good' });
+
+  // Descriptive anchors
+  const badAnchors = [...links].filter(a=>/^(click here|read more|here|link)$/i.test(a.textContent.trim()));
+  checks.push({ cat:'Links', name:'Anchor Text Quality', pass: badAnchors.length===0,
+    detail: badAnchors.length?`${badAnchors.length} generic anchor(s) found`:'All anchor text is descriptive',
+    tip: badAnchors.length?'Use descriptive anchor text instead of "click here"':'Good' });
+
+  // HTTPS check
+  const isHttps = url.startsWith('https');
+  checks.push({ cat:'Technical', name:'HTTPS', pass: isHttps,
+    detail: isHttps?'Site uses HTTPS':'Site uses HTTP',
+    tip: isHttps?'Good':'Migrate to HTTPS for security and SEO' });
+
+  // Structured data
+  const jsonLd = doc.querySelectorAll('script[type="application/ld+json"]');
+  checks.push({ cat:'Technical', name:'Structured Data (JSON-LD)', pass: jsonLd.length>0,
+    detail: jsonLd.length?`${jsonLd.length} JSON-LD block(s) found`:'None found',
+    tip: jsonLd.length?'Good':'Add structured data for rich search results' });
+
+  // Lang attribute
+  const lang = doc.documentElement.getAttribute('lang');
+  checks.push({ cat:'Technical', name:'HTML lang Attribute', pass: !!lang,
+    detail: lang?`lang="${lang}"`:'Missing',
+    tip: lang?'Good':'Add lang attribute for accessibility' });
+
+  // Charset
+  const charset = doc.querySelector('meta[charset]');
+  checks.push({ cat:'Technical', name:'Character Encoding', pass: !!charset,
+    detail: charset?charset.getAttribute('charset'):'Missing',
+    tip: charset?'Good':'Add <meta charset="UTF-8">' });
+
+  return checks;
+}
+
+function renderResults(checks, url) {
+  const total = checks.length;
+  const passed = checks.filter(c=>c.pass).length;
+  const score = Math.round((passed/total)*100);
+  const grade = score>=80?'good':score>=50?'ok':'bad';
+  
+  const cats = {};
+  checks.forEach(c => { if(!cats[c.cat]) cats[c.cat]=[];  cats[c.cat].push(c); });
+
+  let html = `<div class="result-header"><div><h2>Audit Results</h2><p style="color:var(--text2);font-size:.9rem">${url}</p></div><div class="score ${grade}">${score}/100</div></div>`;
+  
+  for(const [cat, items] of Object.entries(cats)){
+    const catPass = items.filter(i=>i.pass).length;
+    const emoji = catPass===items.length?'✅':catPass>0?'⚠️':'❌';
+    html += `<div class="category open" onclick="this.classList.toggle('open')">
+      <div class="category-header"><h3>${emoji} ${cat} <span style="color:var(--text2);font-weight:400;font-size:.85rem">${catPass}/${items.length} passed</span></h3><span class="arrow">▶</span></div>
+      <div class="category-body">${items.map(i=>`<div class="check-item">
+        <span class="check-icon">${i.pass?'✅':'❌'}</span>
+        <div class="check-detail"><strong>${i.name}</strong><p><code>${i.detail}</code></p><p>${i.tip}</p></div>
+      </div>`).join('')}</div></div>`;
+  }
+  
+  const results = document.getElementById('results');
+  results.innerHTML = html;
+  results.style.display = 'block';
+  document.getElementById('ctaBox').style.display = 'block';
+}
+
+document.getElementById('urlInput').addEventListener('keydown', e => { if(e.key==='Enter') startAudit(); });
+</script>
+</body>
+</html>
